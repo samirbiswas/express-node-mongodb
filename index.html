@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+    <title>Node</title>
+</head>
+<body>
+    <div class="container">
+    <h1>hello hope you are fine</h1>
+    <form action="/addProduct" method="post">
+        <div class="form-group">
+          <label for="exampleInputEmail1">Name</label>
+          <input type="text" class="form-control" id="exampleInputEmail1" name="name" >
+         
+        </div>
+        <div class="form-group">
+            <label for="exampleInputEmail1">Price</label>
+            <input type="text" class="form-control" id="exampleInputEmail1" name='price'>
+           
+          </div>
+          <div class="form-group">
+            <label for="exampleInputEmail1">Quantity</label>
+            <input type="text" class="form-control" id="exampleInputEmail1" name='quantity'>
+
+          </div>
+       
+         <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+      <div id="products">
+
+      </div>
+      <div id="update">
+
+      </div>
+      <script>
+          function loadAllProducts(){
+            fetch('/products')
+          .then(res=>res.json())
+            .then(products=>{
+                console.log(products);
+                const container = document.getElementById('products');
+                container.innerHTML ='';
+                products.forEach(pd => {
+                const item = document.createElement('p');
+                item.innerHTML = `${pd.name} Price: ${pd.price} Quantity: ${pd.quantity}
+                <button onclick="loadProduct('${pd._id}')">Update</button>
+                <button onclick="deleteProduct(event,'${pd._id}')">Delete</button>`;
+                container.appendChild(item);
+            })
+
+    })
+          }
+          loadAllProducts();
+    function loadProduct(id){
+        fetch(`/product/${id}`)
+        .then(res=>res.json())
+        .then(result=>{
+            const update = document.getElementById('update');
+            update.innerHTML = `
+            <h2>Update ID : ${result._id}<h2>
+               Price: <input type="text" id="price" value="${result.price}">
+               <br/>
+               Quantity: <input type="text" id="quantity" value="${result.quantity}">
+               
+               <button onclick="updataData('${result._id}')">submit</button>
+            `;
+        })
+
+    }
+
+    function updataData(id){
+        const price  = document.getElementById('price').value;
+        const quantity = document.getElementById('quantity').value;
+        const product ={id, price, quantity};
+        fetch(`/update/${id}`,{
+            method : 'PATCH',
+            headers : {'Content-Type': 'application/json'},
+            body : JSON.stringify(product)
+        })
+        .then(res=> res.json())
+        .then(data=>{
+            if(data){
+                loadAllProducts()
+            }
+        })
+    }
+
+    function deleteProduct(event,id){
+       fetch(`/delete/${id}`,{
+            method : 'DELETE'
+
+       })
+       .then(res=> res.json())
+       .then(result => {
+           if(result){
+               event.target.parentNode.style.display='none';
+           }
+       })
+        
+    }
+
+
+           
+      </script>
+    </div>
+</body>
+</html>
